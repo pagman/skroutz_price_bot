@@ -35,16 +35,28 @@ def findprice(url):
         for item in quotes:
             if (i == 0):
                 first = float(item['price'][:5].replace(',', '.'))
-                print('First', item['shop'], first)
+                #print('First', item['shop'], first)
             if (item['shop'] == 'shop-1503'):
                 hd = float(item['price'][:5].replace(',', '.'))
-                print('Hellas Digital', item['shop'], float(item['price'][:5].replace(',', '.')))
+                #print('Hellas Digital', item['shop'], float(item['price'][:5].replace(',', '.')))
             i = i + 1
         delta = hd - first
-        print('Delta ', float(delta))
+
+        if (delta>0):
+            msrp, lowest, step = [float(s) for s in input('Enter Msrp  lowestPrice and Step seperated with spaces: ').split()]
+            if first <= lowest:
+                print('You cant be first you price gets the lowest ', lowest)
+            elif first > msrp:
+                print('the price is at msrp ', msrp)
+            elif first <= msrp and hd >= lowest:
+                print('the price is ', first-step)
+        if delta == 0:
+            print('You are first already')
+        if delta < 0:
+            print('You dont have this product at Skroutz but others do')
     except: # catch *all* exceptions
        e = sys.exc_info()[0]
-       print(e)
+       #print(e)
 def main():
     url = 'http://www.hellasdigital.gr/xmldatafeed.php?format=skroutz'
     document = requests.get(url)
@@ -57,7 +69,7 @@ def main():
         query = ptable[x].title + ' ' + 'skroutz'
         for j in search(query, tld="gr", num=1, stop=1, pause=2):
             if ('https://www.skroutz.gr/s/' in j):
-                print(j, x)
+                print(j, x, 'from ', len(ptable))
                 findprice(j)
 
 
