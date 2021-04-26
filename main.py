@@ -20,36 +20,56 @@ def findprice(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html5lib')
     quotes = []  # a list to store quotes
-    table = soup.find('div', {'class': 'shop cf'})
-    # print(table)
-    table = soup.find('ol', attrs={'id': 'prices'})
-    # print(table)
-    try:
-        for row in table.find_all('li', attrs={'class': 'card js-product-card has-merchant-selection'}):
-            quote = {}
-            quote['price'] = row.find('div', {'class': 'pre-blp content-placeholder'}).text
-            quote['shop'] = row.get('id')
-            quotes.append(quote)
-        i = 0
-        hd = 0
-        for item in quotes:
-            if (i == 0):
-                first = float(item['price'][:5].replace(',', '.'))
-                #print('First', item['shop'], first)
-            if (item['shop'] == 'shop-1503'):
-                hd = float(item['price'][:5].replace(',', '.'))
-                #print('Hellas Digital', item['shop'], float(item['price'][:5].replace(',', '.')))
-            i = i + 1
-        delta = hd - first
+    options = webdriver.ChromeOptions()
+    options.add_argument("start-maximized")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    driver = webdriver.Chrome("C:\ie\chromedriver.exe", options=options)
+    driver.get(url)
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    driver.set_window_position(-10000, 0)
+    time.sleep(0.5)
+    current_scroll_position, new_height = 0, 1
+    while current_scroll_position <= new_height:
+        current_scroll_position += 300
+        driver.execute_script("window.scrollTo(0, {});".format(current_scroll_position))
+        new_height = driver.execute_script("return document.body.scrollHeight")
 
-        if (delta>0):
-            msrp, lowest, step = [float(s) for s in input('Enter Msrp  lowestPrice and Step seperated with spaces: ').split()]
+    content = driver.page_source.encode('utf-8').strip()
+    soup = BeautifulSoup(content, "html.parser")
+    table = soup.find('ol', attrs={'id': 'prices'})
+    # try:
+    for row in table.find_all('li', attrs={'class': 'card js-product-card has-merchant-selection'}):
+        quote = {}
+        quote['shop'] = row.get('id')
+        quote['shopName'] = row.find('div', {'class': 'shop-name'}).text
+        quote['price'] = row.find('strong', {'class': 'dominant-price'}).text
+        quote['available'] = row.find('p', {'class': 'availability'}).text
+        quotes.append(quote)
+    driver.quit()
+    flag = 1
+    first = 0
+    hdprice = 0
+    try:
+        for item in quotes:
+            if ('Άμεση παραλαβή' in item['available'] and flag == 1):
+                print(item['shopName'], float(item['price'][:5].replace(',', '.')))
+                first = float(item['price'][:5].replace(',', '.'))
+                flag = 0
+            if (item['shop'] == 'shop-1503'):
+                hdprice = float(item['price'][:5].replace(',', '.'))
+                print(item['shopName'], hdprice)
+        delta = hdprice - first
+        print(delta, hdprice, first)
+        if (delta > 0):
+            msrp, lowest, step = [float(s) for s in
+                                  input('Enter Msrp  lowestPrice and Step seperated with spaces: ').split()]
             if first <= lowest:
                 print('You cant be first you price gets the lowest ', lowest)
             elif first > msrp:
                 print('the price is at msrp ', msrp)
-            elif first <= msrp and hd >= lowest:
-                print('the price is ', first-step)
+            elif first <= msrp and hdprice >= lowest:
+                print('the price is ', first - step)
         if delta == 0:
             print('You are first already')
         if delta < 0:
