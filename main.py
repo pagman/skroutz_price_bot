@@ -38,29 +38,32 @@ def findprice(url):
     content = driver.page_source.encode('utf-8').strip()
     soup = BeautifulSoup(content, "html.parser")
     table = soup.find('ol', attrs={'id': 'prices'})
-    # try:
-    for row in table.find_all('li', attrs={'class': 'card js-product-card has-merchant-selection'}):
-        quote = {}
-        quote['shop'] = row.get('id')
-        quote['shopName'] = row.find('div', {'class': 'shop-name'}).text
-        quote['price'] = row.find('strong', {'class': 'dominant-price'}).text
-        quote['available'] = row.find('p', {'class': 'availability'}).text
-        quotes.append(quote)
-    driver.quit()
-    flag = 1
-    first = 0
-    hdprice = 0
     try:
+        for row in table.find_all('li', attrs={'class': 'card js-product-card has-merchant-selection'}):
+            quote = {}
+            quote['shop'] = row.get('id')
+            quote['shopName'] = row.find('div', {'class': 'shop-name'}).text
+            quote['price'] = row.find('strong', {'class': 'dominant-price'}).text
+            quote['available'] = row.find('p', {'class': 'availability'}).text
+            quotes.append(quote)
+        driver.quit()
+        flag = 1
+        first = 0
+        hdprice = 0
+
         for item in quotes:
             if ('Άμεση παραλαβή' in item['available'] and flag == 1):
-                print(item['shopName'], float(item['price'][:5].replace(',', '.')))
+                print('The top with availability is ', item['shopName'], float(item['price'][:5].replace(',', '.')))
                 first = float(item['price'][:5].replace(',', '.'))
                 flag = 0
             if (item['shop'] == 'shop-1503'):
                 hdprice = float(item['price'][:5].replace(',', '.'))
-                print(item['shopName'], hdprice)
+                if (hdprice == first):
+                    print('You are first already')
+                else:
+                    print(item['shopName'], hdprice)
         delta = hdprice - first
-        print(delta, hdprice, first)
+        #print(delta, hdprice, first) #debug
         if (delta > 0):
             msrp, lowest, step = [float(s) for s in
                                   input('Enter Msrp  lowestPrice and Step seperated with spaces: ').split()]
@@ -70,8 +73,6 @@ def findprice(url):
                 print('the price is at msrp ', msrp)
             elif first <= msrp and hdprice >= lowest:
                 print('the price is ', first - step)
-        if delta == 0:
-            print('You are first already')
         if delta < 0:
             print('You dont have this product at Skroutz but others do')
     except: # catch *all* exceptions
