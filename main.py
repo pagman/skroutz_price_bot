@@ -3,9 +3,12 @@ from bs4 import BeautifulSoup
 import sys
 from selenium import webdriver
 import time
-from webdriver_manager.chrome import ChromeDriverManager
+from colorama import init
+# init(strip=not sys.stdout.isatty())  # strip colors if stdout is redirected
+# from termcolor import cprint
+# from pyfiglet import figlet_format
 from googlesearch import search
-import csv
+import os
 class Product:
   def __init__(self, uid, title, price, availability, directlink):
     self.uid = uid
@@ -14,6 +17,17 @@ class Product:
     self.availability = availability
     self.directlink = directlink
 ptable = []
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
+
+def Bigprint(text):
+    cprint(figlet_format(text, font='starwars'),
+           'yellow', 'on_red', attrs=['bold'])
 
 def findprice(url):
     #URL = "https://www.skroutz.gr/s/23566446/Xiaomi-Mi-True-Wireless-Earphones-2-Basic-Bluetooth-Handsfree-%CE%9B%CE%B5%CF%85%CE%BA%CF%8C.html"
@@ -24,7 +38,7 @@ def findprice(url):
     options.add_argument("start-maximized")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
-    driver = webdriver.Chrome("C:\ie\chromedriver.exe", options=options)
+    driver = webdriver.Chrome(resource_path('./driver/chromedriver.exe'), options=options)
     driver.get(url)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     driver.set_window_position(-10000, 0)
@@ -79,6 +93,7 @@ def findprice(url):
        e = sys.exc_info()[0]
        #print(e)
 def main():
+    #Bigprint('Skroutz Bot')
     url = 'http://www.hellasdigital.gr/xmldatafeed.php?format=skroutz'
     document = requests.get(url)
     soup = BeautifulSoup(document.content, "lxml-xml")
