@@ -4,11 +4,13 @@ import sys
 from selenium import webdriver
 import time
 from colorama import init
-# init(strip=not sys.stdout.isatty())  # strip colors if stdout is redirected
-# from termcolor import cprint
-# from pyfiglet import figlet_format
+init(strip=not sys.stdout.isatty())  # strip colors if stdout is redirected
+from termcolor import cprint
+from pyfiglet import figlet_format
 from googlesearch import search
 import os
+
+
 class Product:
   def __init__(self, uid, title, price, availability, directlink):
     self.uid = uid
@@ -93,8 +95,8 @@ def findprice(url):
        e = sys.exc_info()[0]
        #print(e)
 def main():
-    #Bigprint('Skroutz Bot')
-    url = 'http://www.hellasdigital.gr/xmldatafeed.php?format=skroutz'
+    Bigprint('Skroutz Bot')
+    url = 'STORES-URL-WITH-XML'
     document = requests.get(url)
     soup = BeautifulSoup(document.content, "lxml-xml")
     for paragraph in soup.find_all('product'):
